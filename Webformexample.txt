@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Submission Form Widget</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      text-align: center;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    #submit-form {
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #message {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="submit-form">
+    <h2>Submit New Minifigure</h2>
+    <form id="submission-form">
+      <label for="name">Name:</label>
+      <input type="text" id="name" required>
+
+      <label for="age">Age:</label>
+      <select id="age" required>
+        <option value="">Select age group</option>
+        <option value="baby">Baby</option>
+        <option value="child">Chidler</option>
+        <option value="teenager">Tiniger</option>
+        <option value="adult">Adulto</option>
+        <option value="elderly">Oldy</option>
+        <option value="?">?</option>
+      </select>
+
+      <label for="parents">Parents:</label>
+      <input type="text" id="parents">
+
+      <label for="children">Children:</label>
+      <input type="text" id="children">
+
+      <label for="siblings">Siblings:</label>
+      <input type="text" id="siblings">
+
+      <label for="other-relations">Other Relations:</label>
+      <input type="text" id="other-relations">
+
+      <label for="pets">Pets:</label>
+      <input type="text" id="pets">
+
+      <label for="friends">Friends:</label>
+      <input type="text" id="friends">
+
+      <label for="description">Short Description:</label>
+      <textarea id="description" rows="4"></textarea>
+
+      <label for="picture">Picture:</label>
+      <input type="file" id="picture">
+
+      <button type="submit">Submit</button>
+    </form>
+    <img id="image-preview" src="" alt="Image Preview">
+    <div id="message"></div>
+  </div>
+  <div id="submission-table">
+    <h2>Submissions</h2>
+    <input type="text" id="search" placeholder="Search">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Picture</th>
+          <th>Age</th>
+          <th>Parents</th>
+          <th>Children</th>
+          <th>Siblings</th>
+          <th>Other Relations</th>
+          <th>Pets</th>
+          <th>Friends</th>
+          <th>Short Description</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="submission-data">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById('submission-form');
+    const submissionData = document.getElementById('submission-data');
+    const searchBox = document.getElementById('search');
+    const messageDiv = document.getElementById('message');
+    const imagePreview = document.getElementById('image-preview');
+    let submissions = JSON.parse(localStorage.getItem('submissions')) || [];
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = document.getElementById('name').value;
+      const age = document.getElementById('age').value;
+      const parents = document.getElementById('parents').value;
+      const children = document.getElementById('children').value;
+      const siblings = document.getElementById('siblings').value;
+      const otherRelations = document.getElementById('other-relations').value;
+      const pets = document.getElementById('pets').value;
+      const friends = document.getElementById('friends').value;
+      const description = document.getElementById('description').value;
+      const picture = imagePreview.src;
+
+      if (name.trim() === '' || age.trim() === '') {
+        alert('Please fill in Name and Age fields.');
+        return;
+      }
+
+      addSubmissionToTable(
+        name,
+        age,
+        parents,
+        children,
+        siblings,
+        otherRelations,
+        pets,
+        friends,
+        description,
+        picture
+      );
+
+      form.reset();
+      imagePreview.style.display = 'none';
+      showMessage("New Minifigure Submitted");
+    });
+
+    // Function to add submission to table and the submissions array
+    function addSubmissionToTable(name, age, parents, children, siblings, otherRelations, pets, friends, description, picture) {
+      const row = document.createElement('tr');
+      const nameCell = document.createElement('td');
+      const pictureCell = document.createElement('td');
+      const ageCell = document.createElement('td');
+      const parentsCell = document.createElement('td');
+      const childrenCell = document.createElement('td');
+      const siblingsCell = document.createElement('td');
+      const otherRelationsCell = document.createElement('td');
+      const petsCell = document.createElement('td');
+      const friendsCell = document.createElement('td');
+      const descriptionCell = document.createElement('td');
+      const actionCell = document.createElement('td');
+
+      nameCell.textContent = name;
+      pictureCell.innerHTML = `<img src="${picture}" alt="Minifigure Image" style="max-width: 100px;">`;
+      ageCell.textContent = age;
+      parentsCell.textContent = parents || '???';
+      childrenCell.textContent = children || '???';
+      siblingsCell.textContent = siblings || '???';
+      otherRelationsCell.textContent = otherRelations || '???';
+      petsCell.textContent = pets || '???';
+      friendsCell.textContent = friends || '???';
+      descriptionCell.textContent = description || '???';
+
+      // Edit Button
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Edit';
+      editButton.addEventListener('click', () => {
+        editSubmission(name, age, parents, children, siblings, otherRelations, pets, friends, description, picture);
+      });
+
+      // Delete Button
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', () => {
+        if (confirm("Are you sure you want to delete this minifigure?")) {
+          deleteSubmission(name);
+          row.remove();
+        }
+      });
+
+      actionCell.appendChild(editButton);
+      actionCell.appendChild(deleteButton);
+
+      row.appendChild(nameCell);
+      row.appendChild(pictureCell);
+      row.appendChild(ageCell);
+      row.appendChild(parentsCell);
+      row.appendChild(childrenCell);
+      row.appendChild(siblingsCell);
+      row.appendChild(otherRelationsCell);
+      row.appendChild(petsCell);
+      row.appendChild(friendsCell);
+      row.appendChild(descriptionCell);
+      row.appendChild(actionCell);
+
+      submissionData.appendChild(row);
+
+      // Save to submissions array
+      submissions.push({
+        name,
+        age,
+        parents,
+        children,
+        siblings,
+        otherRelations,
+        pets,
+        friends,
+        description,
+        picture
+      });
+      localStorage.setItem('submissions', JSON.stringify(submissions));
+    }
+
+    // Function to edit a submission
+    function editSubmission(name, age, parents, children, siblings, otherRelations, pets, friends, description, picture) {
+      // Find the submission in the array
+      const index = submissions.findIndex((submission) => submission.name === name);
+
+      if (index !== -1) {
+        // Modify the submission in the array
+        submissions[index] = {
+          name,
+          age,
+          parents,
+          children,
+          siblings,
+          otherRelations,
+          pets,
+          friends,
+          description,
+          picture
+        };
+
+        // Update the table row with the new data
+        const rows = submissionData.getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+          const cells = rows[i].getElementsByTagName('td');
+          if (cells[0].textContent === name) {
+            cells[2].textContent = age;
+            cells[3].textContent = parents || '???';
+            cells[4].textContent = children || '???';
+            cells[5].textContent = siblings || '???';
+            cells[6].textContent = otherRelations || '???';
+            cells[7].textContent = pets || '???';
+            cells[8].textContent = friends || '???';
+            cells[9].textContent = description || '???';
+            cells[1].innerHTML = `<img src="${picture}" alt="Minifigure Image" style="max-width: 100px;">`;
+            break;
+          }
+        }
+
+        // Update local storage with the modified array
+        localStorage.setItem('submissions', JSON.stringify(submissions));
+
+        showMessage("Minifigure details updated");
+      }
+    }
+
+    // Function to delete a submission
+    function deleteSubmission(name) {
+      submissions = submissions.filter((submission) => submission.name !== name);
+      localStorage.setItem('submissions', JSON.stringify(submissions));
+    }
+
+    // Function to display a message
+    function showMessage(message) {
+      messageDiv.textContent = message;
+      setTimeout(() => {
+        messageDiv.textContent = '';
+      }, 3000);
+    }
+
+    // Load existing submissions on page load
+    window.addEventListener('load', () => {
+      if (submissions.length > 0) {
+        submissions.forEach((submission) => {
+          addSubmissionToTable(
+            submission.name,
+            submission.age,
+            submission.parents,
+            submission.children,
+            submission.siblings,
+            submission.otherRelations,
+            submission.pets,
+            submission.friends,
+            submission.description,
+            submission.picture
+          );
+        });
+      }
+    });
+
+    // Image Preview
+    const pictureInput = document.getElementById('picture');
+    pictureInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Search Function
+    searchBox.addEventListener('keyup', () => {
+      const filter = searchBox.value.toLowerCase();
+      const rows = submissionData.getElementsByTagName('tr');
+      for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let found = false;
+        for (let j = 0; j < cells.length; j++) {
+          const cell = cells[j];
+          if (cell.textContent.toLowerCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+        rows[i].style.display = found ? '' : 'none';
+      }
+    });
+  </script>
+</body>
+
+</html>
